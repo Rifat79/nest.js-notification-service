@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma } from 'generated/prisma/client';
+import { Prisma } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from './prisma.service';
 

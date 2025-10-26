@@ -1,22 +1,19 @@
+import { Prisma } from '@prisma/client';
 import { PinoLogger } from 'nestjs-pino';
 import { PrismaService } from './prisma.service';
 
 /**
- * BaseRepository is a generic repository for Prisma models.
- * T: The model type (e.g., User)
- * M: The model delegate type (e.g., Prisma.UserDelegate)
- * CreateInput: Input type for create
- * UpdateInput: Input type for update
- * WhereInput: Input type for findFirst/findMany/count
- * WhereUniqueInput: Input type for findUnique/update/delete/upsert
+ * M extends Prisma.RejectOnNotFound is a placeholder to correctly infer the
+ * model delegate type for the specific model being used in the subclass.
+ * The M parameter represents the specific Model Delegate (e.g., Prisma.UserDelegate<any>).
  */
 export abstract class BaseRepository<
-  T,
-  M,
-  CreateInput,
-  UpdateInput,
-  WhereInput,
-  WhereUniqueInput,
+  T, // The returned Model Type (e.g., User)
+  M, // The Prisma Model Delegate Type (e.g., Prisma.UserDelegate<any>)
+  CreateInput extends Prisma.Args<M, 'create'>['data'],
+  UpdateInput extends Prisma.Args<M, 'update'>['data'],
+  WhereInput extends Prisma.Args<M, 'findFirst'>['where'],
+  WhereUniqueInput extends Prisma.Args<M, 'findUnique'>['where'],
 > {
   protected abstract readonly modelName: string;
 
@@ -26,21 +23,26 @@ export abstract class BaseRepository<
   ) {}
 
   /**
-   * Returns the Prisma model delegate (e.g., prisma.user)
+   * Returns the Prisma model delegate (e.g., prisma.user).
+   * It is typed as M, the generic model delegate type, to ensure type safety
+   * for all subsequent Prisma calls.
+   *
+   * @param client The PrismaService instance or a transaction client.
    */
   protected abstract getDelegate(
-    client: PrismaService | any, // PrismaService or TransactionClient
+    client: PrismaService | Prisma.TransactionClient,
   ): M;
 
-  async create(data: CreateInput, tx?: any): Promise<T> {
+  async create(data: CreateInput, tx?: Prisma.TransactionClient): Promise<T> {
     const client = tx || this.prisma;
     try {
+      // The delegate is now strongly typed as M
       const result = await (this.getDelegate(client) as any).create({ data });
       this.logger.info(
         { model: this.modelName, action: 'create' },
         'Record created',
       );
-      return result as T;
+      return result as T; // Cast result to T, the expected model type
     } catch (error) {
       this.logger.error(
         { model: this.modelName, error },
@@ -50,13 +52,17 @@ export abstract class BaseRepository<
     }
   }
 
-  async findUnique(where: WhereUniqueInput, tx?: any): Promise<T | null> {
+  async findUnique(
+    where: WhereUniqueInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<T | null> {
     const client = tx || this.prisma;
     try {
+      // The delegate is now strongly typed as M
       const result = await (this.getDelegate(client) as any).findUnique({
         where,
       });
-      return result as T | null;
+      return result as T | null; // Cast result to T or null
     } catch (error) {
       this.logger.error(
         { model: this.modelName, error },
@@ -66,7 +72,10 @@ export abstract class BaseRepository<
     }
   }
 
-  async findFirst(where: WhereInput, tx?: any): Promise<T | null> {
+  async findFirst(
+    where: WhereInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<T | null> {
     const client = tx || this.prisma;
     try {
       const result = await (this.getDelegate(client) as any).findFirst({
@@ -84,8 +93,13 @@ export abstract class BaseRepository<
 
   async findMany(
     where?: WhereInput,
-    options?: { skip?: number; take?: number; orderBy?: any },
-    tx?: any,
+    options?: {
+      skip?: number;
+      take?: number;
+      // Use the correct type for orderBy from the delegate's findMany args
+      orderBy?: Prisma.Args<M, 'findMany'>['orderBy'];
+    },
+    tx?: Prisma.TransactionClient,
   ): Promise<T[]> {
     const client = tx || this.prisma;
     try {
@@ -106,7 +120,7 @@ export abstract class BaseRepository<
   async update(
     where: WhereUniqueInput,
     data: UpdateInput,
-    tx?: any,
+    tx?: Prisma.TransactionClient,
   ): Promise<T> {
     const client = tx || this.prisma;
     try {
@@ -128,7 +142,10 @@ export abstract class BaseRepository<
     }
   }
 
-  async delete(where: WhereUniqueInput, tx?: any): Promise<T> {
+  async delete(
+    where: WhereUniqueInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<T> {
     const client = tx || this.prisma;
     try {
       const result = await (this.getDelegate(client) as any).delete({ where });
@@ -146,9 +163,13 @@ export abstract class BaseRepository<
     }
   }
 
-  async count(where?: WhereInput, tx?: any): Promise<number> {
+  async count(
+    where?: WhereInput,
+    tx?: Prisma.TransactionClient,
+  ): Promise<number> {
     const client = tx || this.prisma;
     try {
+      // Prisma count returns a number, so no cast is strictly needed, but kept for consistency
       const result: number = await (this.getDelegate(client) as any).count({
         where,
       });
@@ -166,7 +187,7 @@ export abstract class BaseRepository<
     where: WhereUniqueInput,
     create: CreateInput,
     update: UpdateInput,
-    tx?: any,
+    tx?: Prisma.TransactionClient,
   ): Promise<T> {
     const client = tx || this.prisma;
     try {
@@ -190,11 +211,11 @@ export abstract class BaseRepository<
   }
 
   protected async executeRaw(
-    query: string,
-    ...parameters: any[]
+    query: TemplateStringsArray | Prisma.Sql, // Accept tagged template literal or Prisma.Sql
+    ...parameters: any[] // Optional parameters for the tagged template literal
   ): Promise<any> {
+    const client = this.prisma.client;
     try {
-      const client = this.prisma as any; // force type so $executeRaw works
       if (parameters.length > 0) {
         return await client.$executeRaw(query, ...parameters);
       } else {

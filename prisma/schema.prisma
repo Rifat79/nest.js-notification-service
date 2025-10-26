@@ -1,7 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["esm"] 
-  output   = "../generated/prisma"
 }
 
 datasource db {
