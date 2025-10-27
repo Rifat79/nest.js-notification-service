@@ -37,6 +37,11 @@ export const envSchema = z.object({
   RMQ_USER: z.string().min(1),
   RMQ_PASS: z.string().min(1),
 
+  // GP
+  GP_BASE_URL: z.string().min(1),
+  GP_BASIC_AUTH_USER: z.string().min(1),
+  GP_BASIC_AUTH_PASS: z.string().min(1),
+
   // log
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
