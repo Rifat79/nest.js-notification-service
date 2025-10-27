@@ -2,6 +2,7 @@ import { DynamicModule, Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaBatchService } from './prisma-batch.service';
 import { PrismaService } from './prisma.service';
+import { ProductRepository } from './product.repository';
 import { TransactionService } from './transaction.service';
 export interface PrismaModuleOptions {
   isGlobal?: boolean;
@@ -26,6 +27,7 @@ export class PrismaModule {
           useValue: options?.serviceName || 'dcb-renewal-service',
         },
         // Repositories
+        ProductRepository,
       ],
       exports: [
         PrismaService,
@@ -33,6 +35,7 @@ export class PrismaModule {
         TransactionService,
         PrismaBatchService,
         // Repositories
+        ProductRepository,
       ],
     };
   }
@@ -46,12 +49,14 @@ export class PrismaModule {
         TransactionService,
         PrismaBatchService,
         // Repositories
+        ProductRepository,
       ],
       exports: [
         PrismaService,
         TransactionService,
         PrismaBatchService,
         // Repositories
+        ProductRepository,
       ],
     };
   }

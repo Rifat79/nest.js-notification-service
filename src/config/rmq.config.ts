@@ -8,23 +8,16 @@ export default registerAs('rmq', () => {
     user: validatedEnv.RMQ_USER,
     password: validatedEnv.RMQ_PASS,
     queues: {
-      notifications: 'notifications.renewal.queue',
-      notificationsDlq: 'notifications.renewal.dlq',
-    },
-    exchanges: {
-      notifications: 'notifications.renewal.exchange',
-      notificationsDlq: 'notifications.renewal.dlq.exchange',
-    },
-    routingKeys: {
-      notification: 'notifications.renewal.send',
-      notificationDlq: 'notifications.renewal.dlq',
+      subscriptions: 'notifications.subscription.queue',
+      renewals: 'notifications.renewal.queue',
     },
     retryAttempts: 3,
     retryDelay: 5000,
+    prefetchCount: 100,
 
     get url() {
-      const user = encodeURIComponent(this.user); // Encode username
-      const password = encodeURIComponent(this.password); // Encode password
+      const user = encodeURIComponent(this.user);
+      const password = encodeURIComponent(this.password);
       return `amqp://${user}:${password}@${this.host}:${this.port}`;
     },
   };
