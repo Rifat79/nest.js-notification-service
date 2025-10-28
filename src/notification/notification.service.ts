@@ -4,10 +4,15 @@ import { ConfigService } from '@nestjs/config';
 import { Job, Queue } from 'bullmq';
 import { PinoLogger } from 'nestjs-pino';
 import { RabbitMQConsumerService } from 'src/common/rabbitmq/rabbitmq.service';
+import { RedisService } from 'src/common/redis/redis.service';
+import { SmsNotificationResult } from 'src/sms/sms.service';
 import {
   NOTIFICATION_PRIORITY,
   NOTIFICATION_QUEUES,
 } from './notification.constants';
+
+export const SMS_RESULTS_REDIS_KEY = 'notification_sms_results';
+export const WEBHOOK_RESULTS_REDIS_KEY = 'notification_webhook_results';
 
 export type NotificationEventType =
   | 'renew.success'
@@ -19,6 +24,8 @@ export type NotificationEventType =
   | 'unsubscription.fail'
   | 'pre.renewal.alert';
 
+export type PaymentProvider = 'GP' | 'BL' | 'ROBI' | 'ROBI_MIFE';
+
 export interface NotificationPayload {
   id: string;
   source: 'dcb-renewal-service' | 'dcb-billing-service';
@@ -26,7 +33,7 @@ export interface NotificationPayload {
   merchantTransactionId: string;
   keyword: string;
   msisdn: string;
-  paymentProvider: string;
+  paymentProvider: PaymentProvider;
   eventType: NotificationEventType;
   amount: number;
   currency: string;
@@ -62,6 +69,7 @@ export class NotificationService implements OnModuleInit {
     private readonly rabbitmqConsumer: RabbitMQConsumerService,
     private readonly configService: ConfigService,
     private readonly logger: PinoLogger,
+    private readonly redis: RedisService,
   ) {}
 
   async onModuleInit() {
@@ -193,6 +201,15 @@ export class NotificationService implements OnModuleInit {
       );
       throw error;
     }
+  }
+
+  async publishSmsNotificationResult(result: SmsNotificationResult) {
+    await this.redis.rpush(SMS_RESULTS_REDIS_KEY, JSON.stringify(result));
+
+    this.logger.info({
+      msg: 'Published sms sending results',
+      subscriptionId: result.subscriptionId,
+    });
   }
 
   async processDLQMessages(

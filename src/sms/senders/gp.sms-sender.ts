@@ -13,6 +13,19 @@ interface Config {
   timeout: number;
 }
 
+export interface SMSSenderResponse {
+  method: 'GET' | 'POST';
+  url: string;
+  requestPayload: Record<string, any>;
+  requestHeaders: Record<string, any>;
+  responseStatus: number;
+  response: any;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  sentAt: number;
+  deliveredAt?: number | null;
+}
+
 @Injectable()
 export class GpSmsSender implements ISmsSender {
   private readonly config: Config;
@@ -32,9 +45,23 @@ export class GpSmsSender implements ISmsSender {
     };
   }
 
-  async send(msisdn: string, body: string): Promise<any> {
+  async send(msisdn: string, body: string): Promise<SMSSenderResponse> {
+    const senderResponse: SMSSenderResponse = {
+      method: 'POST',
+      url: '',
+      requestPayload: {},
+      requestHeaders: {},
+      responseStatus: 500,
+      response: {},
+      errorCode: null,
+      errorMessage: null,
+      sentAt: Date.now(),
+      deliveredAt: null,
+    };
+
     try {
       const url = `${this.config.baseUrl}/partner/smsmessaging/v2/outbound/tel:+88022900/requests`;
+      senderResponse.url = url;
 
       const payload = {
         outboundSMSMessageRequest: {
@@ -47,16 +74,37 @@ export class GpSmsSender implements ISmsSender {
           messageType: 'ARN',
         },
       };
+      senderResponse.requestPayload = payload;
 
-      const response = await this.httpClient.post(
-        url,
-        payload,
-        this.getAuthHeaders(),
-      );
+      const config = this.getAuthHeaders();
+      senderResponse.requestHeaders = config.headers;
 
-      return response;
-    } catch (error) {
+      const response = await this.httpClient.post(url, payload, config);
+      senderResponse.response = response.data ?? response.error;
+      senderResponse.responseStatus = response.status;
+      senderResponse.errorCode = response.error?.code ?? null;
+      senderResponse.errorMessage = response.error?.message ?? null;
+
+      if (response.status === 200) {
+        senderResponse.deliveredAt = Date.now();
+      }
+
+      return senderResponse;
+    } catch (error: any) {
       this.logger.error(error, 'Catch block error in Gp SMS Sender');
+
+      return {
+        method: 'POST',
+        url: this.config.baseUrl,
+        requestPayload: {},
+        requestHeaders: {},
+        responseStatus: 500,
+        response: {},
+        errorCode: error.code ?? 'EXCEPTION',
+        errorMessage: error.message ?? 'Unexpected error',
+        sentAt: Date.now(),
+        deliveredAt: null,
+      };
     }
   }
 
