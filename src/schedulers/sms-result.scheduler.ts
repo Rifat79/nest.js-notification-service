@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PinoLogger } from 'nestjs-pino';
 import { RedisService } from 'src/common/redis/redis.service';
@@ -6,11 +7,10 @@ import { SmsLogsCreateManyInput } from 'src/database/sms-log.repository';
 import { SMS_RESULTS_REDIS_KEY } from 'src/notification/notification.service';
 import { SmsNotificationResult, SmsService } from 'src/sms/sms.service';
 
-const MAX_BATCH_SIZE = 1000;
-
 @Injectable()
 export class SMSResultSchedular {
   constructor(
+    private readonly configService: ConfigService,
     private readonly logger: PinoLogger,
     private readonly redis: RedisService,
     private readonly smsService: SmsService,
@@ -59,6 +59,10 @@ export class SMSResultSchedular {
     const startTime = Date.now();
     const smsLogsBatch: SmsLogsCreateManyInput[] = [];
     let recordsProcessed = 0;
+    const MAX_BATCH_SIZE = this.configService.get<number>(
+      'batch.smsResultSchedularBatchSize',
+      1000,
+    );
 
     // --- 1. Data Retrieval and Transformation Loop ---
     for (let i = 0; i < MAX_BATCH_SIZE; i++) {

@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { LoggerModule } from './common/logger/logger.module';
 import { RedisModule } from './common/redis/redis.module';
 import appConfig from './config/app.config';
+import batchConfig from './config/batch.config';
 import dbConfig from './config/db.config';
 import redisConfig from './config/redis.config';
 import rmqConfig from './config/rmq.config';
@@ -18,7 +19,7 @@ import { NotificationModule } from './notification/notification.module';
     // Configurations
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, dbConfig, redisConfig, rmqConfig],
+      load: [appConfig, dbConfig, redisConfig, rmqConfig, batchConfig],
     }),
 
     // Logger

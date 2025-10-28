@@ -42,6 +42,10 @@ export const envSchema = z.object({
   GP_BASIC_AUTH_USER: z.string().min(1),
   GP_BASIC_AUTH_PASS: z.string().min(1),
 
+  // Batch Config
+  SMS_RESULT_SCHEDULAR_BATCH_SIZE: z.number().optional().default(1000),
+  WEBHOOK_RESULT_SCHEDULAR_BATCH_SIZE: z.number().optional(),
+
   // log
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'])
