@@ -6,21 +6,21 @@ import {
   NotificationPayload,
   NotificationService,
 } from 'src/notification/notification.service';
-import { SmsService } from 'src/sms/sms.service';
+import { WebhookService } from 'src/webhook/webhook.service';
 
-@Processor(NOTIFICATION_QUEUES.SMS, { concurrency: 20 })
+@Processor(NOTIFICATION_QUEUES.WEBHOOK, { concurrency: 20 })
 export class SmsWorker extends WorkerHost {
   constructor(
     private readonly logger: PinoLogger,
-    private readonly smsService: SmsService,
+    private readonly webhookService: WebhookService,
     private readonly notificationService: NotificationService,
   ) {
     super();
   }
 
   async process(job: Job<NotificationPayload>): Promise<any> {
-    const result = await this.smsService.sendNotificationSms(job.data);
+    const result = await this.webhookService.sendWebhookNotification(job.data);
 
-    await this.notificationService.publishSmsNotificationResult(result);
+    await this.notificationService.publishWebhookNotificationResult(result);
   }
 }

@@ -6,6 +6,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { RabbitMQConsumerService } from 'src/common/rabbitmq/rabbitmq.service';
 import { RedisService } from 'src/common/redis/redis.service';
 import { SmsNotificationResult } from 'src/sms/sms.service';
+import { WebhookNotificationResult } from 'src/webhook/webhook.service';
 import {
   NOTIFICATION_PRIORITY,
   NOTIFICATION_QUEUES,
@@ -203,11 +204,29 @@ export class NotificationService implements OnModuleInit {
     }
   }
 
-  async publishSmsNotificationResult(result: SmsNotificationResult) {
+  async publishSmsNotificationResult(
+    result: SmsNotificationResult,
+  ): Promise<void> {
     await this.redis.rpush(SMS_RESULTS_REDIS_KEY, JSON.stringify(result));
 
     this.logger.info({
       msg: 'Published sms sending results',
+      subscriptionId: result.subscriptionId,
+    });
+  }
+
+  async publishWebhookNotificationResult(
+    result: WebhookNotificationResult | null,
+  ): Promise<void> {
+    if (!result) {
+      this.logger.warn('result was found null');
+      return;
+    }
+
+    await this.redis.rpush(WEBHOOK_RESULTS_REDIS_KEY, JSON.stringify(result));
+
+    this.logger.info({
+      msg: 'Published webhook sending results',
       subscriptionId: result.subscriptionId,
     });
   }

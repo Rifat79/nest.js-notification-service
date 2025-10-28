@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { RabbitMQModule } from 'src/common/rabbitmq/rabbitmq.module';
 import { ProductModule } from 'src/product/product.module';
 import { SmsModule } from 'src/sms/sms.module';
+import { WebhookModule } from 'src/webhook/webhook.module';
 import { SmsWorker } from 'src/workers/sms.worker';
 import { NOTIFICATION_QUEUES } from './notification.constants';
 import { NotificationService } from './notification.service';
@@ -12,6 +13,7 @@ import { NotificationService } from './notification.service';
     ProductModule,
     RabbitMQModule,
     SmsModule,
+    WebhookModule,
     BullModule.registerQueue(
       {
         name: NOTIFICATION_QUEUES.SMS,

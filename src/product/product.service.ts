@@ -6,10 +6,20 @@ import { ProductRepository } from 'src/database/product.repository';
 export interface WebhookConfig {
   billing_notify_url: string;
   unsubscription_notify_url: string;
-  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
+  method: 'POST' | 'GET';
   auth_user?: string;
   auth_password?: string;
   hasAuth: boolean;
+}
+
+export interface WebhookConfigResult {
+  merchantId: number;
+  productId: number;
+  url: string;
+  method: 'POST' | 'GET';
+  hasAuth: boolean;
+  auth_user?: string;
+  auth_password?: string;
 }
 
 @Injectable()
@@ -27,12 +37,12 @@ export class ProductService {
   async getWebhookConfig(
     keyword: string,
     event: string,
-  ): Promise<WebhookConfig> {
+  ): Promise<WebhookConfigResult> {
     const cacheKey = `product:webhook_config:${keyword}:${event}`;
 
     try {
       // ✅ 1. Try cache first
-      const cached = (await this.redis.get(cacheKey)) as WebhookConfig;
+      const cached = (await this.redis.get(cacheKey)) as WebhookConfigResult;
       if (cached) {
         this.logger.debug({ keyword }, 'Webhook config loaded from cache');
         return cached;
@@ -58,7 +68,7 @@ export class ProductService {
       webhookConfig.hasAuth =
         !!webhookConfig.auth_user && !!webhookConfig.auth_password;
 
-      const data = {
+      const configResult = {
         url:
           event === 'unsubscription.success' || event === 'unsubscription.fail'
             ? webhookConfig.unsubscription_notify_url
@@ -67,12 +77,14 @@ export class ProductService {
         hasAuth: webhookConfig.hasAuth,
         auth_user: webhookConfig.auth_user,
         auth_password: webhookConfig.auth_password,
+        merchantId: product.merchant_id,
+        productId: product.id,
       };
 
       // ✅ 3. Cache it for subsequent calls
       await this.redis.set(
         cacheKey,
-        JSON.stringify(webhookConfig),
+        JSON.stringify(configResult),
         this.CACHE_TTL,
       );
 
@@ -87,7 +99,7 @@ export class ProductService {
         'Fetched webhook configuration from DB and cached it',
       );
 
-      return webhookConfig;
+      return configResult;
     } catch (error) {
       this.logger.error(
         { keyword, error: error.message, stack: error.stack },
@@ -95,18 +107,5 @@ export class ProductService {
       );
       throw error;
     }
-  }
-
-  private getAuthHeaders(auth_user: string, auth_password: string) {
-    const credentials = `${auth_user}:${auth_password}`;
-    const encoded = Buffer.from(credentials).toString('base64');
-
-    return {
-      headers: {
-        Authorization: `Basic ${encoded}`,
-        'Content-Type': 'application/json',
-      },
-      timeout: 5000,
-    };
   }
 }

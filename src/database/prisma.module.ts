@@ -1,5 +1,6 @@
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { MerchantNotificationRepository } from './merchant-notification.repository';
 import { PrismaBatchService } from './prisma-batch.service';
 import { PrismaService } from './prisma.service';
 import { ProductRepository } from './product.repository';
@@ -30,6 +31,7 @@ export class PrismaModule {
         // Repositories
         ProductRepository,
         SmsLogRepository,
+        MerchantNotificationRepository,
       ],
       exports: [
         PrismaService,
@@ -39,6 +41,7 @@ export class PrismaModule {
         // Repositories
         ProductRepository,
         SmsLogRepository,
+        MerchantNotificationRepository,
       ],
     };
   }
@@ -54,6 +57,7 @@ export class PrismaModule {
         // Repositories
         ProductRepository,
         SmsLogRepository,
+        MerchantNotificationRepository,
       ],
       exports: [
         PrismaService,
@@ -62,6 +66,7 @@ export class PrismaModule {
         // Repositories
         ProductRepository,
         SmsLogRepository,
+        MerchantNotificationRepository,
       ],
     };
   }
