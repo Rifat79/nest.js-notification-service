@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaBatchService } from './prisma-batch.service';
 import { PrismaService } from './prisma.service';
 import { ProductRepository } from './product.repository';
+import { SmsLogRepository } from './sms-log.repository';
 import { TransactionService } from './transaction.service';
 export interface PrismaModuleOptions {
   isGlobal?: boolean;
@@ -28,6 +29,7 @@ export class PrismaModule {
         },
         // Repositories
         ProductRepository,
+        SmsLogRepository,
       ],
       exports: [
         PrismaService,
@@ -36,6 +38,7 @@ export class PrismaModule {
         PrismaBatchService,
         // Repositories
         ProductRepository,
+        SmsLogRepository,
       ],
     };
   }
@@ -50,6 +53,7 @@ export class PrismaModule {
         PrismaBatchService,
         // Repositories
         ProductRepository,
+        SmsLogRepository,
       ],
       exports: [
         PrismaService,
@@ -57,6 +61,7 @@ export class PrismaModule {
         PrismaBatchService,
         // Repositories
         ProductRepository,
+        SmsLogRepository,
       ],
     };
   }

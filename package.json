@@ -26,6 +26,7 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^6.0.1",
     "@prisma/client": "^6.17.1",
     "amqplib": "^0.10.9",
     "bullmq": "^5.61.2",

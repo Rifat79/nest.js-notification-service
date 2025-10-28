@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 import {
+  SmsLogRepository,
+  SmsLogsCreateManyInput,
+} from 'src/database/sms-log.repository';
+import {
   NotificationEventType,
   NotificationPayload,
   PaymentProvider,
@@ -11,6 +15,7 @@ import { SmsTemplateService } from './sms-template.service';
 // --- Type Definitions (Re-used/Simplified) ---
 
 export interface SmsNotificationResult extends SMSSenderResponse {
+  msisdn: string;
   subscriptionId: string;
   messageType: NotificationEventType;
   messageBody: string;
@@ -32,6 +37,7 @@ export class SmsService {
     private readonly logger: PinoLogger,
     private readonly gpSender: GpSmsSender,
     private readonly templateService: SmsTemplateService,
+    private readonly smsLogRepo: SmsLogRepository,
   ) {
     this.logger.setContext(SmsService.name);
   }
@@ -85,6 +91,7 @@ export class SmsService {
         messageType: eventType,
         messageBody: messageBody,
         provider: provider,
+        msisdn: payload.msisdn,
       };
     } catch (error) {
       // 4. Critical for BullMQ: Log the failure and RE-THROW the error.
@@ -97,5 +104,9 @@ export class SmsService {
       // Re-throw the error so the BullMQ worker process marks the job as failed/retryable.
       throw error;
     }
+  }
+
+  async recordSmsLogs(batch: SmsLogsCreateManyInput[]): Promise<void> {
+    return await this.smsLogRepo.createMany(batch);
   }
 }
