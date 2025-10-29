@@ -4,12 +4,12 @@ export const NOTIFICATION_QUEUES = {
 };
 
 export const NOTIFICATION_PRIORITY = {
-  'renew.success': 10,
-  'renew.fail': 10,
+  'renew.success': 5,
+  'renew.fail': 5,
   'subscription.success': 1,
   'subscription.fail': 1,
   'subscription.cancel': 1,
   'unsubscription.success': 1,
   'unsubscription.fail': 1,
-  'pre.renewal.alert': 5,
+  'pre.renewal.alert': 10,
 };

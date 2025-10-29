@@ -85,7 +85,7 @@ export class GpSmsSender implements ISmsSender {
       senderResponse.errorCode = response.error?.code ?? null;
       senderResponse.errorMessage = response.error?.message ?? null;
 
-      if (response.status === 200) {
+      if (response.status >= 200 && response.status < 300) {
         senderResponse.deliveredAt = Date.now();
       }
 
