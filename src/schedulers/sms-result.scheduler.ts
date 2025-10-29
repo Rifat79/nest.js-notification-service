@@ -30,13 +30,13 @@ export class SMSResultSchedular {
     return {
       msisdn: serializedResult.msisdn,
       message: serializedResult.messageBody,
-      message_type: serializedResult.messageType,
+      event_type: serializedResult.messageType,
       related_subscription_id: serializedResult.subscriptionId,
       http_method: serializedResult.method,
       request_url: serializedResult.url,
       request_payload: serializedResult.requestPayload,
       request_headers: serializedResult.requestHeaders,
-      status: serializedResult.responseStatus.toString(),
+      http_status: serializedResult.responseStatus,
       error_code: serializedResult.errorCode,
       error_message: serializedResult.errorMessage,
       provider: serializedResult.provider,
@@ -47,6 +47,10 @@ export class SMSResultSchedular {
         : null,
       delivered_at: serializedResult.deliveredAt
         ? new Date(serializedResult.deliveredAt)
+        : null,
+      delivery_status: serializedResult.deliveryStatus,
+      failed_at: serializedResult.failedAt
+        ? new Date(serializedResult.failedAt)
         : null,
     };
   }

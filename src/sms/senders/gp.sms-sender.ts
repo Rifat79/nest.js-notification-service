@@ -23,7 +23,9 @@ export interface SMSSenderResponse {
   errorCode?: string | null;
   errorMessage?: string | null;
   sentAt: number;
+  failedAt?: number;
   deliveredAt?: number | null;
+  deliveryStatus: 'pending' | 'delivered' | 'failed';
 }
 
 @Injectable()
@@ -57,6 +59,7 @@ export class GpSmsSender implements ISmsSender {
       errorMessage: null,
       sentAt: Date.now(),
       deliveredAt: null,
+      deliveryStatus: 'pending',
     };
 
     try {
@@ -86,7 +89,10 @@ export class GpSmsSender implements ISmsSender {
       senderResponse.errorMessage = response.error?.message ?? null;
 
       if (response.status >= 200 && response.status < 300) {
+        senderResponse.deliveryStatus = 'delivered';
         senderResponse.deliveredAt = Date.now();
+      } else {
+        senderResponse.failedAt = Date.now();
       }
 
       return senderResponse;
@@ -103,6 +109,8 @@ export class GpSmsSender implements ISmsSender {
         errorCode: error.code ?? 'EXCEPTION',
         errorMessage: error.message ?? 'Unexpected error',
         sentAt: Date.now(),
+        failedAt: Date.now(),
+        deliveryStatus: 'failed',
         deliveredAt: null,
       };
     }
