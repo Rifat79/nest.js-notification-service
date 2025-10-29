@@ -336,6 +336,18 @@ model subscriptions {
   products                       products                      @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
+model sms_templates {
+  id         Int       @id @default(autoincrement())
+  event_type String
+  operator   String
+  template   String
+  version    Int?      @default(1)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([event_type, operator, version])
+}
+
 enum product_plan_billing_model_type {
   ONE_TIME
   RECURRING

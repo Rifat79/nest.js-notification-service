@@ -5,6 +5,7 @@ import { PrismaBatchService } from './prisma-batch.service';
 import { PrismaService } from './prisma.service';
 import { ProductRepository } from './product.repository';
 import { SmsLogRepository } from './sms-log.repository';
+import { SmsTemplateRepository } from './sms-template.repository';
 import { TransactionService } from './transaction.service';
 export interface PrismaModuleOptions {
   isGlobal?: boolean;
@@ -32,6 +33,7 @@ export class PrismaModule {
         ProductRepository,
         SmsLogRepository,
         MerchantNotificationRepository,
+        SmsTemplateRepository,
       ],
       exports: [
         PrismaService,
@@ -42,6 +44,7 @@ export class PrismaModule {
         ProductRepository,
         SmsLogRepository,
         MerchantNotificationRepository,
+        SmsTemplateRepository,
       ],
     };
   }
@@ -58,6 +61,7 @@ export class PrismaModule {
         ProductRepository,
         SmsLogRepository,
         MerchantNotificationRepository,
+        SmsTemplateRepository,
       ],
       exports: [
         PrismaService,
@@ -67,6 +71,7 @@ export class PrismaModule {
         ProductRepository,
         SmsLogRepository,
         MerchantNotificationRepository,
+        SmsTemplateRepository,
       ],
     };
   }

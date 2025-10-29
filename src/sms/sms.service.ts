@@ -58,7 +58,7 @@ export class SmsService {
 
     try {
       // 1. Template Generation
-      const template = this.templateService.getTemplate(
+      const template = await this.templateService.getTemplate(
         eventType,
         paymentProvider,
       );
